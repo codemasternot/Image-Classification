@@ -21,7 +21,7 @@ test_dir = 'C:\\Users\\Stephen\\test'   # Example: 'data/test'
 
 
 train_datagen = ImageDataGenerator(
-    rescale=1.0/255.0,
+    rescale=1.0/255.0, # Play around with the parameters based on data complexity
     rotation_range=1,  # Further reduce rotation
     width_shift_range=0.005,  # Reduce horizontal shifts
     height_shift_range=0.005,  # Reduce vertical shifts

@@ -60,7 +60,7 @@ test_generator = test_datagen.flow_from_directory(
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
 # Freeze the base_model layers to retain pre-trained ImageNet weights
-for layer in base_model.layers[-2:]:  # Unfreeze the last 50 layers
+for layer in base_model.layers[-2:]:  # Unfreeze the last 2 layers to avoid overfitting
     layer.trainable = True
 
 

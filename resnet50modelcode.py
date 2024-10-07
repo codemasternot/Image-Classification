@@ -98,7 +98,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=2, min_lr
 history = model.fit(
     train_generator,
     steps_per_epoch=train_generator.samples // train_generator.batch_size,
-    epochs=1,  # You can increase or decrease based on validation results
+    epochs=25,  # You can increase or decrease based on validation results
     validation_data=test_generator,
     validation_steps=test_generator.samples // test_generator.batch_size,
     callbacks=[early_stop, reduce_lr]  # Early stopping and learning rate scheduler

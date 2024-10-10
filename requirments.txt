@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+Pillow
+google-cloud-storage
+tensorflow
+schedule  # Add this line
+requests

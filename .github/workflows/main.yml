@@ -11,36 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the repository
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Step 2: Set up Python
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
 
-    # Step 3: Install dependencies
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirments.txt
+        pip install -r requirements.txt
 
-    # Step 4: Set Google Cloud credentials
     - name: Set Google Cloud credentials
       run: |
         echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > /tmp/gcp_key.json
-        export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp_key.json"  # Make sure this is exported correctly
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp_key.json"
 
-    # Step 5: Run modelapp.py with batch argument
     - name: Run batch predictions using modelapp.py
       run: |
-        python modelapp.py batch  # Trigger batch processing in your script
+        python modelapp.py batch
 
-    # Optional: Show logs after the batch run
     - name: Show log output
       run: |
-        cat mylog.txt  # Ensure the log file exists and the correct path is specified
+        cat mylog.txt

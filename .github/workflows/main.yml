@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirments.txt
+        pip install -r requirements.txt  # Ensure all dependencies are installed
 
     # Step 4: Set Google Cloud credentials
     - name: Set Google Cloud credentials
@@ -35,7 +35,7 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-    # Step 5: Run modelapp.py directly with batch argument
+    # Step 5: Run modelapp.py with batch argument
     - name: Run batch predictions using modelapp.py
       run: |
         python modelapp.py batch  # Trigger batch processing in your script
@@ -43,4 +43,4 @@ jobs:
     # Optional: Show logs after the batch run
     - name: Show log output
       run: |
-        cat mylog.txt  # Ensure this log file exists and the correct path is specified
+        cat mylog.txt  # Adjust this path if necessary

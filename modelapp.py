@@ -35,8 +35,25 @@ classes = ['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']
 BUCKET_NAME = "apitestdata"  
 FOLDER_NAME = "sdffv"  # Folder containing the batch images
 
+LOG_BUCKET_NAME = "mylogss"  # My log bucket name
+LOG_FILE_NAME = "mylog.txt"
 # Initialize Google Cloud Storage client
 storage_client = storage.Client()
+
+def upload_log_to_gcs(content):
+    """Upload log content to Google Cloud Storage."""
+    bucket = storage_client.bucket(LOG_BUCKET_NAME)
+    blob = bucket.blob(LOG_FILE_NAME)
+    
+    # Get the existing log content if any
+    if blob.exists():
+        existing_log = blob.download_as_string().decode("utf-8")
+    else:
+        existing_log = ""
+
+    # Append new log content and upload
+    updated_log = existing_log + "\n" + content
+    blob.upload_from_string(updated_log)
 
 def download_image_from_gcs(bucket_name, file_name):
     """Download an image from GCS and return it as a numpy array."""

@@ -35,24 +35,23 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-    # Step 5: Run FastAPI server in the background
+    # Step 5: Start FastAPI server in the foreground
     - name: Start FastAPI server
       run: |
-        nohup uvicorn your_file_name:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
-
-    # Step 6: Check FastAPI server logs
-    - name: Check FastAPI logs
+        nohup uvicorn modelapp:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
+    
+    # Step 6: Check server readiness and wait until it is ready
+    - name: Wait for FastAPI to be ready
       run: |
-        sleep 10  # Wait for the server to start
-        echo "FastAPI log:"
-        cat fastapi.log  # Display the server logs for debugging
+        for i in {1..15}; do
+          curl --silent --fail http://localhost:8000/ || sleep 5;
+        done
 
     # Step 7: Trigger batch prediction from GCS
     - name: Perform batch prediction
       run: |
         curl http://localhost:8000/predict-from-gcs-folder
 
-    # Step 8: Clean up (optional)
-    - name: Clean up running FastAPI server
-      run: |
-        kill $(lsof -t -i:8000)
+    # Step 8: Check FastAPI logs for debugging
+    - name: Show FastAPI logs
+      run: cat fastapi.log

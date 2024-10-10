@@ -29,13 +29,12 @@ jobs:
 
     # Step 4: Set Google Cloud credentials
     - name: Set Google Cloud credentials
-      run: |
+       run: |
         echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > /tmp/gcp_key.json
         export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp_key.json"
-      # This environment variable is used by the Google Cloud SDK to authenticate requests
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-
+        
     # Step 5: Run modelapp.py directly with batch argument
     - name: Run batch predictions using modelapp.py
       run: |

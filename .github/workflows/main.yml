@@ -1,4 +1,4 @@
-name: Run Batch Prediction via FastAPI
+name: Run Batch Prediction via modelapp.py
 
 on:
   push:
@@ -25,9 +25,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt || \
         pip install fastapi uvicorn Pillow google-cloud-storage tensorflow
 
-    # Step 4: Set Google Cloud credentials using a secret
+    # Step 4: Set Google Cloud credentials
     - name: Set Google Cloud credentials
       run: |
         echo "$GOOGLE_APPLICATION_CREDENTIALS" > /tmp/gcp_key.json
@@ -35,23 +36,7 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-    # Step 5: Start FastAPI server in the foreground
-    - name: Start FastAPI server
+    # Step 5: Run modelapp.py directly
+    - name: Run FastAPI app (modelapp.py)
       run: |
-        nohup uvicorn modelapp:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
-    
-    # Step 6: Check server readiness and wait until it is ready
-    - name: Wait for FastAPI to be ready
-      run: |
-        for i in {1..15}; do
-          curl --silent --fail http://localhost:8000/ || sleep 5;
-        done
-
-    # Step 7: Trigger batch prediction from GCS
-    - name: Perform batch prediction
-      run: |
-        curl http://localhost:8000/predict-from-gcs-folder
-
-    # Step 8: Check FastAPI logs for debugging
-    - name: Show FastAPI logs
-      run: cat fastapi.log
+        python modelapp.py batch

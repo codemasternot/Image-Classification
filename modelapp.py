@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-url = https://storage.googleapis.com/modelresnet/Image_resnet50.h5
+url = "https://storage.googleapis.com/modelresnet/Image_resnet50.h5"
 response = requests.get(url)
 model_path = "Image_resnet50.h5"
 with open(model_path, "wb") as file:

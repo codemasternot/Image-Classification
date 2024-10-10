@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt  # Make sure this file includes all dependencies
+        pip install -r requirments.txt  # Make sure this file includes all dependencies
 
     # Step 4: Set Google Cloud credentials
     - name: Set Google Cloud credentials

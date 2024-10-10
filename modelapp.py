@@ -25,11 +25,6 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-if credentials_path:
-    print(f"Using credentials from: {credentials_path}")
-else:
-    raise Exception("GOOGLE_APPLICATION_CREDENTIALS environment variable is not set.")
 
 url = "https://storage.googleapis.com/modelresnet/Image_resnet50.h5"
 response = requests.get(url)

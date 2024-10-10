@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import tensorflow as tf
 from fastapi.middleware.cors import CORSMiddleware
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array, load_img

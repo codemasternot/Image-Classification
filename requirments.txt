@@ -1,7 +1,20 @@
+# FastAPI framework
 fastapi
+
+# ASGI server for running FastAPI
 uvicorn
+
+# Pillow for image processing
 Pillow
+
+# Google Cloud Storage client library
 google-cloud-storage
+
+# TensorFlow for model handling
 tensorflow
-schedule  # Add this line
+
+# Schedule for scheduling tasks
+schedule
+
+# Requests for making HTTP requests
 requests

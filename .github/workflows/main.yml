@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirments.txt  # Make sure requirements.txt includes boto3, tensorflow, etc.
+        pip install -r requirements.txt  # Ensure boto3, tensorflow, etc. are included.
 
     # Step 4: Set AWS credentials for accessing S3
     - name: Configure AWS credentials
@@ -33,14 +33,14 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: "your-region"  # Replace with your AWS region (e.g., us-east-1)
+        aws-region: "us-east-1"  # Replace this with your actual region
 
     # Step 5: Download model from S3 to the workspace
     - name: Download model from S3
       run: |
-        aws s3 cp s3://mybucketgithub/Image_resnet50.h5 ./Image_resnet50.h5  # Adjust if your file is located elsewhere in S3
+        aws s3 cp s3://mybucketgithub/Image_resnet50.h5 ./Image_resnet50.h5  # Adjust S3 path if necessary
 
-    # Step 6: Run the FastAPI app or perform batch predictions
+    # Step 6: Run the FastAPI app
     - name: Run FastAPI app
       run: |
         python modelapp.py

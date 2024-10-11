@@ -8,6 +8,7 @@ from google.cloud import storage
 import numpy as np
 from io import BytesIO
 from PIL import Image
+import logging
 import os
 from datetime import datetime
 import schedule

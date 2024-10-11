@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt  # Make sure requirements.txt includes boto3, tensorflow, etc.
+        pip install -r requirments.txt  # Make sure requirements.txt includes boto3, tensorflow, etc.
 
     # Step 4: Set AWS credentials for accessing S3
     - name: Configure AWS credentials

@@ -18,3 +18,5 @@ schedule
 
 # Requests for making HTTP requests
 requests
+
+boto3

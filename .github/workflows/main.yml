@@ -1,38 +1,37 @@
-name: Run Batch Prediction via modelapp.py
+name: Deploy to AWS S3
 
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:  # Allows manual trigger of the workflow
+      - main  # This will trigger the workflow when code is pushed to the main branch
 
 jobs:
-  batch_predict:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirments.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirments.txt
 
-    - name: Set Google Cloud credentials
-      run: |
-        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > /tmp/gcp_key.json
-        export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp_key.json"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Run batch predictions using modelapp.py
-      run: |
-        python modelapp.py batch
-
-    - name: Show log output
-      run: |
-        cat mylog.txt
+      - name: Deploy to S3
+        run: |
+          aws s3 cp ./dist s3://your-bucket-name --recursive
+          # Replace './dist' with the path of the files you want to upload to S3
+          # Replace 'your-bucket-name' with the name of your S3 bucket

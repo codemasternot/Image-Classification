@@ -28,19 +28,18 @@ app.add_middleware(
 
 
 s3_client = boto3.client('s3')
-BUCKET_NAME = "mybucketgithub"  
+BUCKET_NAME = "mybucketgithub" 
 MODEL_FILE_KEY = "Image_resnet50.h5"
-LOG_FILE_KEY = "mylog.txt"
-PREDICT_FOLDER = "predict/"
 
 classes = ['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']
 
-def download_model_from_s3(bucket_name, model_key):
-    """Download the model from S3 and load it."""
-    s3_client.download_file(bucket_name, model_key, model_key)  
-    return tf.keras.models.load_model(model_key)
+def download_model_from_s3(bucket_name, model_key, local_path):
+    """Download the model from S3 to the local path."""
+    s3_client.download_file(bucket_name, model_key, local_path)
 
-model = download_model_from_s3(BUCKET_NAME, MODEL_FILE_KEY)
+local_model_path = "Image_resnet50.h5"  # Local path to save the model
+download_model_from_s3(BUCKET_NAME, MODEL_FILE_KEY, local_model_path)
+model = tf.keras.models.load_model(local_model_path)
 
 def preprocess_image(file):
     image = Image.open(BytesIO(file))

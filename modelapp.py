@@ -17,17 +17,6 @@ import time
 import threading
 import requests
 
-logging.basicConfig(
-    filename='mylog.txt',  # Log file name
-    level=logging.INFO,     # Log level
-    format='%(asctime)s - %(levelname)s - %(message)s'  # Log message format
-)
-
-# Optional: log to console
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-logging.getLogger().addHandler(console_handler)
 
 SUPPORTED_IMAGE_FORMATS = ["jpeg", "png"]
 app = FastAPI()
@@ -47,10 +36,18 @@ MODEL_FILE_KEY = "Image_resnet50.h5"
 LOG_FILE_KEY = "mylog.txt"
 PREDICT_FOLDER = "predict/"
 
+log_file = "mylog.txt"  # Temp log file
+logging.basicConfig(
+    filename=log_file,  # Log file to be stored temporarily
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 def download_model_from_s3(bucket_name, model_key):
     """Download the model from S3 and load it."""
     local_model_path = "Image_resnet50.h5"
-    s3_client.download_file(bucket_name, model_key, local_model_path)  # Download model file from S3
+    s3_client.download_file(bucket_name, model_key, local_model_path)  
+    logging.info(f"Model {model_key} downloaded from S3 bucket {bucket_name}")
     return tf.keras.models.load_model(local_model_path)
     
 model = download_model_from_s3(BUCKET_NAME, MODEL_FILE_KEY)
@@ -69,16 +66,12 @@ def upload_log_to_s3(content):
     """Upload log content to AWS S3."""
     try:
         # Get the current log content from S3
-        obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY)
-        existing_log = obj['Body'].read().decode('utf-8')
-    except s3_client.exceptions.NoSuchKey:
-        existing_log = ""
+        s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=content)
+        logging.info(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
+    except Exception as e:
+        logging.error(f"Failed to upload log to S3: {str(e)}")
 
-    # Append the new log content
-    updated_log = existing_log + "\n" + content
-
-    # Upload the updated log back to S3
-    s3_client.put_object(Body=updated_log, Bucket=BUCKET_NAME, Key=LOG_FILE_KEY)
+   
 
 def download_image_from_s3(bucket_name, file_key):
     """Download an image from AWS S3 and return it as a numpy array."""
@@ -107,11 +100,9 @@ def predict_from_s3_folder(bucket_name, folder_name):
             prediction = model.predict(image)
             class_index = np.argmax(prediction[0])
             predicted_class = classes[class_index]
-
-            # Log the result and append it
+            result = {"filename": file_key, "prediction": predicted_class}
+            results.append(result)
             logging.info(f"Predicted {predicted_class} for {file_key}")
-            upload_log_to_s3(f"Predicted {predicted_class} for {file_key}")
-            results.append({"filename": file_key, "prediction": predicted_class})
 
     return results
 
@@ -132,6 +123,8 @@ async def predict(file: UploadFile = File(...)):
 async def predict_from_s3_folder_api():
     try:
         predictions = predict_from_s3_folder(BUCKET_NAME, PREDICT_FOLDER)
+        with open(log_file, "r") as log:
+            upload_log_to_s3(log.read())
         return {"predictions": predictions}
     except Exception as e:
         logging.error(f"Error during S3 folder prediction: {str(e)}")

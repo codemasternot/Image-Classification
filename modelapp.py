@@ -74,11 +74,11 @@ def upload_log_to_s3(content):
             print(f"Log content before uploading to S3:\n{log_content}")  # Debugging step
             
             # Upload log to S3
-           s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log_content)
+            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log_content)
         
-       print(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
-   except Exception as e:
-       print(f"Failed to upload log to S3: {str(e)}")
+        print(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
+    except Exception as e:
+        print(f"Failed to upload log to S3: {str(e)}")
    
 
 def download_image_from_s3(bucket_name, file_key):

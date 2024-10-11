@@ -36,12 +36,6 @@ MODEL_FILE_KEY = "Image_resnet50.h5"
 LOG_FILE_KEY = "mylog.txt"
 PREDICT_FOLDER = "predict/"
 
-log_file = "mylog.txt"  # Local log file
-logging.basicConfig(
-    filename=log_file,  # Log file to be stored temporarily
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 def download_model_from_s3(bucket_name, model_key):
     """Download the model from S3 and load it."""
@@ -102,8 +96,10 @@ def predict_from_s3_folder(bucket_name, folder_name):
             result = {"filename": file_key, "prediction": predicted_class}
             results.append(result)
 
-            logging.info(f"Predicted {predicted_class} for {file_key}")
-
+            log_entry = f"Predicted {predicted_class} for {file_key}"
+            log_content += log_entry + "\n"
+            print(log_entry)
+    upload_log_to_s3(log_content)
     return results
 
 @app.post("/predict")
@@ -113,8 +109,8 @@ async def predict(file: UploadFile = File(...)):
         prediction = model.predict(image)
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
-        logging.info(f"Predicted class: {predicted_class} for uploaded image.")
-        upload_log_to_s3()
+        log_content = f"Predicted class: {predicted_class} for uploaded image."
+        upload_log_to_s3(log_content)  # Upload log for single prediction
         return {"prediction": predicted_class}
     except Exception as e:
         logging.error(f"Error during prediction: {str(e)}")
@@ -124,7 +120,6 @@ async def predict(file: UploadFile = File(...)):
 async def predict_from_s3_folder_api():
     try:
         predictions = predict_from_s3_folder(BUCKET_NAME, PREDICT_FOLDER)
-        upload_log_to_s3()  # Upload log to S3 after batch prediction
         return {"predictions": predictions}
     except Exception as e:
         logging.error(f"Error during S3 folder prediction: {str(e)}")

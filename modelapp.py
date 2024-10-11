@@ -96,7 +96,11 @@ def predict_from_s3_folder(bucket_name, folder_name):
     """Perform batch prediction on images from the S3 folder."""
     results = []
     response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
-
+    if 'Contents' in response:
+        upload_log_to_s3(f"Retrieved {len(response['Contents'])} objects from S3 bucket.")
+    else:
+        upload_log_to_s3("No objects found in the specified S3 bucket.")
+        
     for obj in response.get('Contents', []):
         file_key = obj['Key']
 

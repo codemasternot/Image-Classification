@@ -39,7 +39,7 @@ def download_model_from_s3(bucket_name, model_key):
     s3_client.download_file(bucket_name, model_key, local_model_path)  # Download model file from S3
     return tf.keras.models.load_model(local_model_path)
     
-model = tf.keras.models.load_model(local_model_path)
+model = download_model_from_s3(BUCKET_NAME, MODEL_FILE_KEY)
 
 classes = ['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']
 

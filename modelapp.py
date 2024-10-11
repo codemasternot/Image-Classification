@@ -63,18 +63,22 @@ def preprocess_image(file):
     return image
 
 def upload_log_to_s3(content):
-    """Upload the log file to S3 after flushing it."""
-    logging.info("Flushing logs to file before upload.")
-    # Ensure all logs are written to file
-    for handler in logging.getLogger().handlers:
-        handler.flush()
-    
+   """Upload the log file to S3."""
     try:
+        # Ensure all log entries are written to the log file
+        logging.shutdown()
+
+        # Read the log file and print its content (for debugging)
         with open(log_file, "r") as log:
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log.read())
-        logging.info(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
+            log_content = log.read()
+            print(f"Log content before uploading to S3:\n{log_content}")  # Debugging step
+            
+            # Upload log to S3
+            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log_content)
+        
+        print(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
     except Exception as e:
-        logging.error(f"Failed to upload log to S3: {str(e)}")
+        print(f"Failed to upload log to S3: {str(e)}")
    
 
 def download_image_from_s3(bucket_name, file_key):
@@ -90,22 +94,23 @@ def download_image_from_s3(bucket_name, file_key):
     return image
 
 def predict_from_s3_folder(bucket_name, folder_name):
-    """Perform batch prediction on images from the specified S3 folder."""
+    """Perform batch prediction on images from the S3 folder."""
     results = []
-    
-    # List objects in the folder
     response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+
     for obj in response.get('Contents', []):
         file_key = obj['Key']
-        
-        # Only process .jpg and .png files
+
         if file_key.endswith(".jpg") or file_key.endswith(".png"):
-            image = download_image_from_s3(bucket_name, file_key)
+            image_data = s3_client.get_object(Bucket=bucket_name, Key=file_key)['Body'].read()
+            image = preprocess_image(image_data)
             prediction = model.predict(image)
             class_index = np.argmax(prediction[0])
             predicted_class = classes[class_index]
+
             result = {"filename": file_key, "prediction": predicted_class}
             results.append(result)
+
             logging.info(f"Predicted {predicted_class} for {file_key}")
 
     return results

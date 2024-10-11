@@ -36,7 +36,7 @@ MODEL_FILE_KEY = "Image_resnet50.h5"
 LOG_FILE_KEY = "mylog.txt"
 PREDICT_FOLDER = "predict/"
 
-log_file = "mylog.txt"  # Temp log file
+log_file = "mylog.txt"  # Local log file
 logging.basicConfig(
     filename=log_file,  # Log file to be stored temporarily
     level=logging.INFO,
@@ -63,14 +63,18 @@ def preprocess_image(file):
     return image
 
 def upload_log_to_s3(content):
-    """Upload log content to AWS S3."""
+    """Upload the log file to S3 after flushing it."""
+    logging.info("Flushing logs to file before upload.")
+    # Ensure all logs are written to file
+    for handler in logging.getLogger().handlers:
+        handler.flush()
+    
     try:
-        # Get the current log content from S3
-        s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=content)
+        with open(log_file, "r") as log:
+            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log.read())
         logging.info(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
     except Exception as e:
         logging.error(f"Failed to upload log to S3: {str(e)}")
-
    
 
 def download_image_from_s3(bucket_name, file_key):
@@ -123,8 +127,7 @@ async def predict(file: UploadFile = File(...)):
 async def predict_from_s3_folder_api():
     try:
         predictions = predict_from_s3_folder(BUCKET_NAME, PREDICT_FOLDER)
-        with open(log_file, "r") as log:
-            upload_log_to_s3(log.read())
+        upload_log_to_s3()  # Upload log to S3 after batch prediction
         return {"predictions": predictions}
     except Exception as e:
         logging.error(f"Error during S3 folder prediction: {str(e)}")

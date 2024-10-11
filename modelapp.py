@@ -114,8 +114,10 @@ async def predict(file: UploadFile = File(...)):
         prediction = model.predict(image)
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
+        logging.info(f"Predicted class: {predicted_class} for uploaded image.")
         return {"prediction": predicted_class}
     except Exception as e:
+        logging.error(f"Error during prediction: {str(e)}")
         return {"error": str(e)}
 
 @app.get("/predict-from-s3-folder")

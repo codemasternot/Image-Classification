@@ -63,22 +63,13 @@ def preprocess_image(file):
     return image
 
 def upload_log_to_s3(content):
-   """Upload the log file to S3."""
+   """Upload log content to AWS S3."""
    try:
-        # Ensure all log entries are written to the log file
-       logging.shutdown()
-
-        # Read the log file and print its content (for debugging)
-       with open(log_file, "r") as log:
-            log_content = log.read()
-            print(f"Log content before uploading to S3:\n{log_content}")  # Debugging step
-            
-            # Upload log to S3
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=log_content)
-        
-       print(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
+       with open(log_file, "rb") as f:  # Open the log file in binary mode
+            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=f)
+       logging.info(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
    except Exception as e:
-       print(f"Failed to upload log to S3: {str(e)}")
+       logging.error(f"Failed to upload log to S3: {str(e)}")
    
 
 def download_image_from_s3(bucket_name, file_key):
@@ -123,6 +114,7 @@ async def predict(file: UploadFile = File(...)):
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
         logging.info(f"Predicted class: {predicted_class} for uploaded image.")
+        upload_log_to_s3()
         return {"prediction": predicted_class}
     except Exception as e:
         logging.error(f"Error during prediction: {str(e)}")

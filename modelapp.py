@@ -15,6 +15,11 @@ import boto3
 import time
 import threading
 import requests
+
+log_file_path = "mylog.txt"  # Log file name
+logging.basicConfig(filename=log_file_path, level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 SUPPORTED_IMAGE_FORMATS = ["jpeg", "png"]
 app = FastAPI()
 

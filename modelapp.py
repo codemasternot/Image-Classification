@@ -114,7 +114,6 @@ async def predict(file: UploadFile = File(...)):
         prediction = model.predict(image)
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
-        logging.info(f"Predicted class: {predicted_class} for uploaded image.")
         return {"prediction": predicted_class}
     except Exception as e:
         logging.error(f"Error during prediction: {str(e)}")
@@ -126,4 +125,5 @@ async def predict_from_s3_folder_api():
         predictions = predict_from_s3_folder(BUCKET_NAME, PREDICT_FOLDER)
         return {"predictions": predictions}
     except Exception as e:
+        logging.error(f"Error during S3 folder prediction: {str(e)}")
         return {"error": str(e)}

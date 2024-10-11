@@ -35,8 +35,9 @@ PREDICT_FOLDER = "predict/"
 
 def download_model_from_s3(bucket_name, model_key):
     """Download the model from S3 and load it."""
-    s3_client.download_file(bucket_name, model_key, model_key)  # Download model file from S3
-    return tf.keras.models.load_model(model_key)
+    local_model_path = "Image_resnet50.h5"
+    s3_client.download_file(bucket_name, model_key, local_model_path)  # Download model file from S3
+    return tf.keras.models.load_model(local_model_path)
     
 model = tf.keras.models.load_model(local_model_path)
 

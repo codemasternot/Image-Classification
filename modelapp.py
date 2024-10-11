@@ -36,12 +36,27 @@ MODEL_FILE_KEY = "Image_resnet50.h5"
 LOG_FILE_KEY = "mylog.txt"
 PREDICT_FOLDER = "predict/"
 
+def log_message_to_s3(message):
+    try:
+        # Download existing log from S3, if available
+        try:
+            existing_log = s3_client.get_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY)['Body'].read().decode('utf-8')
+        except s3_client.exceptions.NoSuchKey:
+            existing_log = ""
+        
+        # Append new log message
+        updated_log = existing_log + message + "\n"
+        
+        # Upload updated log to S3
+        s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=updated_log.encode('utf-8'))
+        print(f"Log updated in S3: {message}")
+    except Exception as e:
+        print(f"Failed to update log in S3: {str(e)}")
 
 def download_model_from_s3(bucket_name, model_key):
     """Download the model from S3 and load it."""
     local_model_path = "Image_resnet50.h5"
-    s3_client.download_file(bucket_name, model_key, local_model_path)  
-    logging.info(f"Model {model_key} downloaded from S3 bucket {bucket_name}")
+    s3_client.download_file(bucket_name, model_key, local_model_path)
     return tf.keras.models.load_model(local_model_path)
     
 model = download_model_from_s3(BUCKET_NAME, MODEL_FILE_KEY)
@@ -55,15 +70,6 @@ def preprocess_image(file):
     image = np.array(image) / 255.0  # Normalize image
     image = np.expand_dims(image, axis=0)  # Add batch dimension
     return image
-
-def upload_log_to_s3(content):
-   """Upload log content to AWS S3."""
-   try:
-       with open(log_file, "rb") as f:  # Open the log file in binary mode
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=f)
-       logging.info(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
-   except Exception as e:
-       logging.error(f"Failed to upload log to S3: {str(e)}")
    
 
 def download_image_from_s3(bucket_name, file_key):
@@ -96,10 +102,7 @@ def predict_from_s3_folder(bucket_name, folder_name):
             result = {"filename": file_key, "prediction": predicted_class}
             results.append(result)
 
-            log_entry = f"Predicted {predicted_class} for {file_key}"
-            log_content += log_entry + "\n"
-            print(log_entry)
-    upload_log_to_s3(log_content)
+            log_message_to_s3(f"Predicted {predicted_class} for {file_key}")
     return results
 
 @app.post("/predict")
@@ -109,11 +112,10 @@ async def predict(file: UploadFile = File(...)):
         prediction = model.predict(image)
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
-        log_content = f"Predicted class: {predicted_class} for uploaded image."
-        upload_log_to_s3(log_content)  # Upload log for single prediction
+        log_message_to_s3(f"Predicted class: {predicted_class} for uploaded image.")
         return {"prediction": predicted_class}
     except Exception as e:
-        logging.error(f"Error during prediction: {str(e)}")
+        log_message_to_s3(f"Error during prediction: {str(e)}")
         return {"error": str(e)}
 
 @app.get("/predict-from-s3-folder")

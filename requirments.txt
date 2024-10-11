@@ -22,3 +22,5 @@ requests
 boto3
 
 python-multipart
+
+logging

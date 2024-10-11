@@ -17,9 +17,17 @@ import time
 import threading
 import requests
 
-log_file_path = "mylog.txt"  # Log file name
-logging.basicConfig(filename=log_file_path, level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename='mylog.txt',  # Log file name
+    level=logging.INFO,     # Log level
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Log message format
+)
+
+# Optional: log to console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(console_handler)
 
 SUPPORTED_IMAGE_FORMATS = ["jpeg", "png"]
 app = FastAPI()
@@ -114,6 +122,7 @@ async def predict(file: UploadFile = File(...)):
         prediction = model.predict(image)
         class_index = np.argmax(prediction[0])
         predicted_class = classes[class_index]
+        logging.info(f"Predicted class: {predicted_class} for uploaded image.")
         return {"prediction": predicted_class}
     except Exception as e:
         logging.error(f"Error during prediction: {str(e)}")

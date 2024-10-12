@@ -2,8 +2,8 @@ name: Run Batch Prediction via modelapp.py
 
 on:
   schedule:
-    # Run every day at 8 PM (UTC)
-    - cron: "00 20 * * *"
+    # Run every day at 8:30 PM SAST
+    - cron: "35 18 * * *" 
   workflow_dispatch:  # Allows manual trigger of the workflow
 
 jobs:

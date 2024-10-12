@@ -90,7 +90,6 @@ def download_image_from_s3(bucket_name, file_key):
     image = image.resize((224, 224))  # Resize to match the model input size
     image = np.array(image) / 255.0  # Normalize pixel values to [0, 1]
     image = np.expand_dims(image, axis=0)  # Add batch dimension
-    upload_log_to_s3(f"Successfully downloaded and processed image: {file_key}")
     return image
 
 imagedown = download_image_from_s3(BUCKET_NAME, PREDICT_FOLDER)
@@ -118,6 +117,8 @@ def predict_from_s3_folder(bucket_name, folder_name):
 
             upload_log_to_s3(f"Predicted {predicted_class} for {file_key}")
     return results
+
+imagedown = predict_from_s3_folder(BUCKET_NAME, PREDICT_FOLDER)
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):

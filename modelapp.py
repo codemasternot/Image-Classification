@@ -16,32 +16,32 @@ import boto3
 import time
 import threading
 import requests
+# Packages needed
 
-
-SUPPORTED_IMAGE_FORMATS = ["jpeg", "png"]
-app = FastAPI()
+SUPPORTED_IMAGE_FORMATS = ["jpeg", "png"] # Formats for this task
+app = FastAPI() # FastApi application
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
-    allow_credentials=True,
+    allow_credentials=True, # Allows API to handle cookies and authentication
     allow_methods=["*"],  
     allow_headers=["*"],  
-)
+) # 
 
 
 s3_client = boto3.client('s3')
-BUCKET_NAME = "mybucketgithub"  # Replace with your S3 bucket name
+BUCKET_NAME = "mybucketgithub"  
 MODEL_FILE_KEY = "Image_resnet50.h5"
 LOG_FILE_KEY = "mylog.txt"
 PREDICT_FOLDER = "predict/"
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s") 
 
 def upload_log_to_s3(message):
     """Upload log content to AWS S3."""
     try:
-        # Create log content
+
         log_message = f"{message}\n"
         
         # Check if log file exists in S3
@@ -51,10 +51,10 @@ def upload_log_to_s3(message):
         except s3_client.exceptions.NoSuchKey:
             existing_log = ""
 
-        # Append new log message
+        # Add to new log message
         updated_log = existing_log + log_message
 
-        # Upload the updated log back to S3
+        # Upload the updated log back to AWS
         s3_client.put_object(Bucket=BUCKET_NAME, Key=LOG_FILE_KEY, Body=updated_log)
         print(f"Log file uploaded to S3 bucket {BUCKET_NAME}")
     except Exception as e:
@@ -76,9 +76,9 @@ def preprocess_image(file):
     image = Image.open(BytesIO(file))
     if image.mode == 'RGBA':
         image = image.convert('RGB')
-    image = image.resize((224, 224))  # Resize for your model's input
-    image = np.array(image) / 255.0  # Normalize image
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
+    image = image.resize((224, 224))  
+    image = np.array(image) / 255.0 
+    image = np.expand_dims(image, axis=0)  
     return image
    
 
@@ -87,7 +87,6 @@ def download_image_from_s3(bucket_name, file_key):
     obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
     image_data = obj['Body'].read()
 
-    # Open and preprocess the image
     image = Image.open(BytesIO(image_data))
     image = image.resize((224, 224))  # Resize to match the model input size
     image = np.array(image) / 255.0  # Normalize pixel values to [0, 1]

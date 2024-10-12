@@ -74,6 +74,8 @@ classes = ['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']
 # Preprocess image
 def preprocess_image(file):
     image = Image.open(BytesIO(file))
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')
     image = image.resize((224, 224))  # Resize for your model's input
     image = np.array(image) / 255.0  # Normalize image
     image = np.expand_dims(image, axis=0)  # Add batch dimension
